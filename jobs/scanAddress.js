@@ -5,7 +5,7 @@ import { escape, Precision } from 'influx';
 import { backfillBalanceQueue, balanceQueue } from '../lib/queue'
 import uuidv4 from 'uuid/v4'
 
-export const scanAddress =  async (job) => {
+export const scanAddress = async (job) => {
 	let err = null
 	const { address } = job.data
 	const latestBlock = await web3.eth.getBlock('latest').catch(e=>err=e)
@@ -27,14 +27,13 @@ export const scanAddress =  async (job) => {
 	await influx.writePoints(points, { precision: Precision.Seconds })
 	
 	// queue next job, hack until chained jobs are implemented
-	const symbols = balances.map(b=>b.symbol)
 	// await balanceQueue.add({ address }, { jobId: uuidv4(), repeat: { cron: '*/1 * * * *' } }).catch(e=>err=e)
 	// if (err) {
 	// 	console.error(`unable to queue ${address} for monitoring`, err)
 	// 	return Promise.reject(err)
 	// }
 	// console.log(`queued ${address} for balance monitoring`)
-	await backfillBalanceQueue.add({ address, symbols }, { jobId: uuidv4() })
+	await backfillBalanceQueue.add({ address, days: 365 }, { jobId: uuidv4() })
 	console.log(`queued ${address} for balance backfill`)
 	return Promise.resolve(balances)
 }

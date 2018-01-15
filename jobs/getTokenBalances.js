@@ -3,6 +3,7 @@ import { web3 } from '../lib/web3'
 import influx from '../lib/influx'
 import { escape, Precision } from 'influx';
 import { backfillBalanceQueue } from '../lib/queue'
+import { getAddressBalances } from '../services/address'
 
 export const getTokenBalances = async (job) => {
 	let err = null
@@ -13,30 +14,19 @@ export const getTokenBalances = async (job) => {
 		return Promise.reject(err)
 	}
 	console.log(`getting new balances for ${address} on block ${latestBlock.number}`)
-	const query = `
-		select * from balances
-		where address = ${escape.stringLit(address)}
-		group by symbol
-		order by time desc
-		limit 1
-	`
-	const rows = await influx.query(query).catch(e=>err=e)
-	console.log('num tokens', rows.length, rows.map(r=>r.symbol))
+	const currentBalances = await getAddressBalances(address).catch(e=>err=e)
 	if (err) {
-		console.log('unable to get address symbols', err)
+		console.log('unable to get current balances', err)
 		return Promise.reject(err)
 	}
-	const queries = rows.map(async ({symbol})=>{
+	const queries = currentBalances.map(async ({symbol})=>{
 		const contractAddress = getContractAddressBySymbol(symbol)
 		const balance = await getTokenBalance(contractAddress, address).catch(e=>err=e)
 		if (err) {
 			console.error('unable to get balance for token:', symbol, job)
-			return Promise.reject(err)
+			throw err
 		}
-		return Promise.resolve({
-			symbol,
-			balance
-		})
+		return { symbol, balance }
 	})
 	const balances = await Promise.all(queries).catch(e=>err=e)
 	if (err) {

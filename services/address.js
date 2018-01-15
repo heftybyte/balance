@@ -44,3 +44,35 @@ export const monitorBalance = async (address, symbol) =>{
 	}
 	return true
 }
+
+export const getAddressBalances = async (address) =>{
+	let err = null
+	const addresses = Array.isArray(address) ?
+		address.map(a=>a.toLowerCase()) : [address.toLowerCase()]
+	const query = `
+		select * from balances
+		where address =~ /^${addresses.join('$|^')}$/
+		group by address, symbol
+		order by time desc
+		limit 1
+	`
+	console.log('getAddressBalances', query)
+	const rows = await influx.query(query).catch(e=>err=e)
+	console.log(rows.length)
+	if (err) {
+		throw err
+	}
+	const map = {}
+	rows.forEach(token=>{
+		if (!map[token.symbol]) {
+			map[token.symbol] = 0
+		}
+		map[token.symbol] += token.balance
+	})
+	const balances = Object.keys(map).map(symbol=>({
+		symbol,
+		balance: map[symbol]
+	}))
+	// console.log('num tokens', rows.length, rows.map(r=>r.symbol))
+	return balances
+}
