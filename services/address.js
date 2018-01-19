@@ -4,7 +4,7 @@ import uuidv4 from 'uuid/v4'
 import influx from '../lib/influx'
 import { escape, Precision } from 'influx';
 
-export const registerNewAddress = async (address) =>{
+export const registerNewAddress = async (address, userId) =>{
 	if (!web3.utils.isAddress(address)) {
 		console.error('can\'t register invalid address', address)
 		return false
@@ -24,7 +24,7 @@ export const registerNewAddress = async (address) =>{
 		console.error('registerNewAddress:: address already exist', address)
 		return false
 	}
-	await scanQueue.add({ address }, { jobId: uuidv4() }).catch(e=>err=e)
+	await scanQueue.add({ address, userId }, { jobId: uuidv4() }).catch(e=>err=e)
 	if (err) {
 		console.error('registerNewAddress', address, err)
 		return false
@@ -69,10 +69,6 @@ export const getAddressBalances = async (address) =>{
 		}
 		map[token.symbol] += token.balance
 	})
-	const balances = Object.keys(map).map(symbol=>({
-		symbol,
-		balance: map[symbol]
-	}))
 	// console.log('num tokens', rows.length, rows.map(r=>r.symbol))
-	return balances
+	return map
 }

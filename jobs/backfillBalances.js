@@ -49,7 +49,7 @@ export const backfillBalances = async (job) => {
 	}
 
 	const rows = results[0]
-	const symbols = results[1].map(r=>r.symbol)
+	const symbols = Object.keys(results[1])
 	const blocks = rows.filter(r=>r.number).map(r=>({number: r.number, time: r.time}))
 	const queue = new BlueBirdQueue({ 
 		concurrency: 4,

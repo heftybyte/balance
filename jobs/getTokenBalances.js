@@ -19,7 +19,7 @@ export const getTokenBalances = async (job) => {
 		console.log('unable to get current balances', err)
 		return Promise.reject(err)
 	}
-	const queries = currentBalances.map(async ({symbol})=>{
+	const queries = Object.keys(currentBalances).map(async ({symbol})=>{
 		const contractAddress = getContractAddressBySymbol(symbol)
 		const balance = await getTokenBalance(contractAddress, address).catch(e=>err=e)
 		if (err) {

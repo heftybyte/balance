@@ -2,12 +2,16 @@ import { getAllTokenBalances } from '../lib/eth'
 import { web3 } from '../lib/web3'
 import influx from '../lib/influx'
 import { escape, Precision } from 'influx';
-import { backfillBalanceQueue, balanceQueue } from '../lib/queue'
+import {
+	backfillBalanceQueue,
+	balanceQueue,
+	scanCompleteQueue
+} from '../lib/queue'
 import uuidv4 from 'uuid/v4'
 
 export const scanAddress = async (job) => {
 	let err = null
-	const { address } = job.data
+	const { address, userId } = job.data
 	const latestBlock = await web3.eth.getBlock('latest').catch(e=>err=e)
 	if (err) {
 		console.error('unable to latest block', job)
@@ -33,7 +37,8 @@ export const scanAddress = async (job) => {
 	// 	return Promise.reject(err)
 	// }
 	// console.log(`queued ${address} for balance monitoring`)
-	await backfillBalanceQueue.add({ address, days: 365 }, { jobId: uuidv4() })
+	await scanCompleteQueue.add({ address, numTokens: balances.length, userId }, { jobId: uuidv4() })
+	// await backfillBalanceQueue.add({ address, days: 365 }, { jobId: uuidv4() })
 	console.log(`queued ${address} for balance backfill`)
 	return Promise.resolve(balances)
 }
