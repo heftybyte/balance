@@ -1,3 +1,4 @@
 .env
 .vscode
+.mutable
 node_modules
