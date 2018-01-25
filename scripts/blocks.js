@@ -6,7 +6,7 @@ import { Precision } from 'influx'
 
 const web3 = new Web3(new Web3.providers.HttpProvider("http://138.197.104.147:8545"))
 const BATCH_SIZE = 1000
-const TOTAL_BLOCKS = 4850000
+const TOTAL_BLOCKS = 5000000
 const TOTAL_BATCHES = Math.ceil(TOTAL_BLOCKS/BATCH_SIZE)
 
 const numWorkers = process.argv[2] || 1

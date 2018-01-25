@@ -25,6 +25,7 @@
     "bignumber.js": "^5.0.0",
     "bluebird-queue": "0.0.8",
     "bull": "^3.3.7",
+    "crypto-exchange": "^2.3.3",
     "dotenv": "^4.0.0",
     "express": "^4.16.2",
     "human-standard-token-abi": "^1.0.2",

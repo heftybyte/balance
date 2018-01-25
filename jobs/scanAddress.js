@@ -31,14 +31,11 @@ export const scanAddress = async (job) => {
 	await influx.writePoints(points, { precision: Precision.Seconds })
 	
 	// queue next job, hack until chained jobs are implemented
-	// await balanceQueue.add({ address }, { jobId: uuidv4(), repeat: { cron: '*/1 * * * *' } }).catch(e=>err=e)
-	// if (err) {
-	// 	console.error(`unable to queue ${address} for monitoring`, err)
-	// 	return Promise.reject(err)
-	// }
-	// console.log(`queued ${address} for balance monitoring`)
+	const now = new Date()
+	const first = new Date('Jul-30-2015') // first ethereum block date
+	const days = (((((now - first) / 1000) / 60) / 60) / 24)
 	await scanCompleteQueue.add({ address, numTokens: balances.length, userId }, { jobId: uuidv4() })
-	// await backfillBalanceQueue.add({ address, days: 365 }, { jobId: uuidv4() })
-	console.log(`queued ${address} for balance backfill`)
+	await backfillBalanceQueue.add({ address, days }, { jobId: uuidv4() })
+	console.log(`queued ${address} for ${days} day balance backfill`)
 	return Promise.resolve(balances)
 }
