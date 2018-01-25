@@ -34,6 +34,9 @@ app.get('/balances', async (req, res)=>{
 	res.send(result)
 })
 
+app.get('/health', (req, res)=>{
+    res.sendStatus(200)
+})
 
 const PORT = process.env.PORT || 3004;
 app.listen(PORT, ()=>{
