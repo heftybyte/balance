@@ -11,7 +11,11 @@ app.post('/address/:address', async (req, res)=>{
 	res.sendStatus(result ? 200 : 400)
 })
 
-app.get('/balances/:address', async (req, res)=>{
+app.get('/health', (req, res)=>{
+    res.sendStatus(200)
+})
+
+app.get('/:address', async (req, res)=>{
 	let err = null
 	const { address } = req.params
 	const result = await getAddressBalances(address.toLowerCase()).catch(e=>err=e)
@@ -22,7 +26,7 @@ app.get('/balances/:address', async (req, res)=>{
 	res.send(result)
 })
 
-app.get('/balances', async (req, res)=>{
+app.get('/historical', async (req, res)=>{
 	let err = null
 	const { addresses: a } = req.query
 	const addresses = a.split(',')
@@ -34,9 +38,22 @@ app.get('/balances', async (req, res)=>{
 	res.send(result)
 })
 
-app.get('/health', (req, res)=>{
-    res.sendStatus(200)
+app.get('/', async (req, res)=>{
+	let err = null
+	const { addresses: a } = req.query
+	if (!a) {
+		res.sendStatus(404)
+		return
+	}
+	const addresses = a.split(',')
+	const result = await getAddressBalances(addresses).catch(e=>err=e)
+	if (err) {
+		res.sendStatus(500)
+		return
+	}
+	res.send(result)
 })
+
 
 const PORT = process.env.PORT || 3004;
 app.listen(PORT, ()=>{
