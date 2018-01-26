@@ -1,4 +1,5 @@
 import {} from 'dotenv/config'
+import { web3 } from './lib/web3'
 import { getAllTokenBalances } from './lib/eth';
 import { getAddressBalances, registerNewAddress } from './services/address';
 
@@ -15,10 +16,11 @@ app.get('/health', (req, res)=>{
     res.sendStatus(200)
 })
 
-app.get('/:address', async (req, res)=>{
+app.get('/historical', async (req, res)=>{
 	let err = null
-	const { address } = req.params
-	const result = await getAddressBalances(address.toLowerCase()).catch(e=>err=e)
+	const { addresses: a } = req.query
+	const addresses = a.split(',')
+	const result = await getAddressBalances(addresses).catch(e=>err=e)
 	if (err) {
 		res.sendStatus(500)
 		return
@@ -26,11 +28,14 @@ app.get('/:address', async (req, res)=>{
 	res.send(result)
 })
 
-app.get('/historical', async (req, res)=>{
+app.get('/:address', async (req, res)=>{
 	let err = null
-	const { addresses: a } = req.query
-	const addresses = a.split(',')
-	const result = await getAddressBalances(addresses).catch(e=>err=e)
+	const { address } = req.params
+	if (!web3.utils.isAddress(address)) {
+		res.sendStatus(400)
+		return
+	}
+	const result = await getAddressBalances(address.toLowerCase()).catch(e=>err=e)
 	if (err) {
 		res.sendStatus(500)
 		return
