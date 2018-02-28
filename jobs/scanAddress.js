@@ -4,7 +4,6 @@ import influx from '../lib/influx'
 import { escape, Precision } from 'influx';
 import {
 	backfillBalanceQueue,
-	balanceQueue,
 	scanCompleteQueue
 } from '../lib/queue'
 import uuidv4 from 'uuid/v4'
