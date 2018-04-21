@@ -1,4 +1,4 @@
-import { getAllTokenBalances } from '../lib/eth'
+import { getAllTokenBalances, getETHBalance } from '../lib/eth'
 import { web3 } from '../lib/web3'
 import influx from '../lib/influx'
 import { escape, Precision } from 'influx';
@@ -16,11 +16,20 @@ export const scanAddress = async (job) => {
 		console.error('unable to latest block', job)
 		return Promise.reject(err)
 	}
-	const balances = await getAllTokenBalances(address).catch(e=>err=e)
+	const results = await Promise.all([
+		getAllTokenBalances(address),
+		getETHBalance(address)
+	]).catch(e=>err=e)
+
 	if (err) {
 		console.error('unable to get balances for address', job)
 		return Promise.reject(err)
 	}
+	const balances = results[0]
+	balances.push({
+		symbol: 'ETH',
+		balance: results[1]
+	})
 	const points = balances.map(b=>({
 		measurement: 'balances',
 		tags: { address, symbol: b.symbol },

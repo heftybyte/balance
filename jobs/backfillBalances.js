@@ -61,9 +61,9 @@ export const backfillBalances = async (job) => {
 		blocks.forEach((block)=>{
 			queue.add(
 				getBalanceBySymbolBlock(symbol, address, block)
-					.then(balance=>{
+					.then({time,balance,symbol}=>{
 						job.progress((++fetchedBalances/totalBalances) * 100)
-						console.log(`got balance for ${balance.symbol} at ${time}`)
+						console.log(`found ${balance}${symbol} at ${time}`)
 						return Promise.resolve(balance)
 					})
 			)
